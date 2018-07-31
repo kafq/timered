@@ -1,7 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Button, Alert, Platform, FlatList, Picker } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TouchableHighlight, Alert, Platform, FlatList, Picker } from 'react-native';
 import { Notifications, Permissions } from 'expo';
 import Timer from './components/Timer';
+import AddTaskModal from './components/AddTaskModal';
+import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
+import { Provider } from 'react-redux';
+import store from './store'; //Import the store
 
 async function getiOSNotificationPermission() {
   const { status } = await Permissions.getAsync(
@@ -17,11 +21,12 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      isCreateModeOn: false,
       newTimerMinDuration: 0,
       newTimerSecDuration: 0,
       timers: [
-              {title: 'Cook the pork', duration: 72000},
-              {title: 'Cook the beef', duration: 72000}]
+              {id: 0, title: 'Cook the pork', duration: 72000, isPaused: false},
+              {id: 1, title: 'Cook the beef', duration: 72000, isPaused: false}]
     }
   }
 
@@ -72,6 +77,20 @@ export default class App extends React.Component {
     timers.forEach(item => {return{duration: duration -1000 ,...item}} )
   }
 
+  toggleCreateMode = () => {
+    this.setState({isCreateModeOn: !this.state.isCreateModeOn})
+  }
+
+  pauseTimer = (id) => {
+    console.log('Pausing timer ' + id)
+    let timers = this.state.timers.concat()
+    timers.forEach(timer => timer.id === id ? timer.isPaused = !timer.isPaused : timer)
+
+    this.setState({
+      timers
+    })
+  }
+
   componentWillMount() {
     getiOSNotificationPermission();
     //Notifications.cancelAllScheduledNotificationsAsync()
@@ -79,60 +98,65 @@ export default class App extends React.Component {
   }
   render() {
     return (
-      <View style={styles.container}>
-        {/* <Text style={styles.heading}>Create Timer</Text>      
-          <View style={{height: 200, width: 200, flexDirection: 'row', flex: 1}}>
-            <Picker
-              selectedValue={this.state.newTimerMinDuration}
-              style={{width: 100, height: 44, }}
-              onValueChange={(itemValue, itemIndex) => this.setState({newTimerMinDuration: itemValue})}>
-              <Picker.Item label="0" value="0" />          
-              <Picker.Item label="1" value="1" />
-              <Picker.Item label="2" value="2" />
-              <Picker.Item label="3" value="3" />
-            </Picker>
-            <Picker
-              selectedValue={this.state.newTimerSecDuration}
-              style={{  width: 200,
-                height: 44, }}
-              onValueChange={(itemValue, itemIndex) => this.setState({newTimerSecDuration: itemValue})}>
-              <Picker.Item label="0" value="0" />          
-              <Picker.Item label="10" value="10" />
-              <Picker.Item label="20" value="20" />
-              <Picker.Item label="30" value="30" />
-              <Picker.Item label="40" value="40" />
-              <Picker.Item label="50" value="50" />
-            </Picker>
-          </View>
-        <Text>Timer state: {this.state.newTimerMinDuration} mins {this.state.newTimerSecDuration} sec</Text>
-        <Button
-          title="Create"
-          onPress={this.createTimer}
-        /> 
-        <Button
-          title="Send a notification in 5 seconds!"
-          onPress={this._handleButtonPress}
-        />
-      */}
-
-        <View style={{flex: 1}}>
-          
+      <Provider store={store}>
+      <View style={[styles.container, {position: 'relative'}]}>
+       
+        {
+          this.state.isCreateModeOn ? 
+            <AddTaskModal
+              toggleCreateMode={this.toggleCreateMode}
+            /> : null
+        }
           <View style={styles.padded}>
-            <Text style={styles.heading}>Timers</Text> 
+            <Text style={styles.heading}>Timers</Text>
           </View>
-          <FlatList
+          {/* <FlatList
             data={this.state.timers}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({item}) =>
               <Timer
+
                 timer={item}
               />
-            }/>
-        </View>
-        <TouchableOpacity style={styles.addButton}>
+            } /> */}
+          <SwipeListView
+            useFlatList
+            style={{position: 'relative'}}
+            data={this.state.timers}
+            renderItem={ (data, rowMap) => (
+                  <Timer
+                
+                  timer={data.item}/>
+                
+               
+            )}
+            renderHiddenItem={ (data, rowMap) => (
+              <View style={{position: 'absolute', right: 0, marginVertical: 3, flexDirection: 'row'}}>
+                  
+                  <TouchableOpacity style={styles.stopButton}>
+                    <Text style={{color: 'white'}}>S</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                  onPress={() => {this.pauseTimer(data.item.id)}}
+                  style={styles.pauseButton}>
+                    <Text style={{color: 'white'}}>{data.item.isPaused ? 'R' : 'P'}</Text>
+                  </TouchableOpacity>
+
+              </View>
+          )}
+
+            previewRowKey={'0'}
+            rightOpenValue={-162}
+          />
+        
+        <TouchableOpacity
+        onPress={this.toggleCreateMode}
+        style={styles.addButton}>
           <Text style={styles.activeTextLight}>+</Text>
         </TouchableOpacity>
       </View>
+      </Provider>
     );
   }
 }
@@ -168,5 +192,34 @@ const styles = StyleSheet.create({
   activeTextLight: {
     color: 'white',
     fontSize: 24
+  },
+  rowFront: {
+    zIndex: 10,
+    position: 'absolute',
+    backgroundColor: 'white'
+  },
+  rowBack: {
+    alignItems: 'center',
+    backgroundColor: '#DDD',
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingLeft: 15,
+    position: 'absolute',
+    zIndex: 0
+  },
+  stopButton: {
+    height: 81,
+    width: 81,
+    backgroundColor: '#FA5D9F',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  pauseButton: {
+    height: 81,
+    width: 81,
+    backgroundColor: '#FFE079',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });

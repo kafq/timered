@@ -19,7 +19,7 @@ export default class Timer extends Component {
 
     componentDidMount() {
         let interval = setInterval(() => {
-            if (!this.state.isPaused) {
+            if (!this.props.timer.isPaused) {
                 if (this.state.duration > 0 ) {
                     let duration = this.state.duration - 1000;
                     this.setState({
@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
         paddingLeft: 24,
         paddingRight: 46,
         marginVertical: 3,
+        height: 81,
         backgroundColor: '#F6F6F6',
         flexDirection: 'row',
         justifyContent: 'space-between',
