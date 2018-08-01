@@ -1,22 +1,19 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import {bindActionCreators} from 'redux';
 import { connect } from 'react-redux';
-import * as Actions from '../actions'; //Import your actions
+import { updateNewTimerColor } from '../actions';
 
 class ColorTag extends Component {
-    componentDidMount() {
-        this.props.getData(); //call our action
-        console.log(this.props.colors)
-    }
+    
     state = {
         isSelected: false
     }
 
     toggleSelected = () => {
-        console.log(this.state)
         this.setState({
             isSelected: !this.state.isSelected
+        }, () => {
+            if (this.state.isSelected) this.props.updateNewTimerColor(this.props.color)
         })
     }
 
@@ -49,23 +46,10 @@ const styles = StyleSheet.create({
     }
 })
 
-
-function mapStateToProps(state, props) {
-    return {
-        loading: state.dataReducer.loading,
-        data: state.dataReducer.data
-    }
-  }
-  
-  // Doing this merges our actions into the component’s props,
-  // while wrapping them in dispatch() so that they immediately dispatch an Action.
-  // Just by doing this, we will have access to the actions defined in out actions file (action/home.js)
-  function mapDispatchToProps(dispatch) {
-    return bindActionCreators(Actions, dispatch);
-  }
-  
   //Connect everything
-  export default connect((state) => ({
-    colors: state.dataReducer.labelColors
-  }), mapDispatchToProps)(ColorTag);
+  export default connect(() => ({
+
+  }), {
+      updateNewTimerColor
+  })(ColorTag);
   

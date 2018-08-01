@@ -1,4 +1,8 @@
 export const DATA_AVAILABLE = 'DATA_AVAILABLE';
+export const ADD_NEW_TIMER = 'ADD_NEW_TIMER';
+export const UPDATE_NEW_TIMER_COLOR = 'UPDATE_NEW_TIMER_COLOR';
+export const UPDATE_NEW_TIMER_TITLE = 'UPDATE_NEW_TIMER_TITLE';
+export const UPDATE_NEW_TIMER_DURATION = 'UPDATE_NEW_TIMER_DURATION';
 
 //Import the sample data
 dataSample = {
@@ -18,3 +22,8 @@ export function getData(){
  
     };
 }
+export const addNewTimer = (title, color) => ({type: ADD_NEW_TIMER, payload: {title, color}})
+export const updateNewTimerTitle = (newTitle) => ({type: UPDATE_NEW_TIMER_TITLE, payload: newTitle})
+export const updateNewTimerColor = (newColor) => ({type: UPDATE_NEW_TIMER_COLOR, payload: newColor})
+export const updateNewTimerDuration = (newDuration) => ({type: UPDATE_NEW_TIMER_DURATION, payload: newDuration})
+
