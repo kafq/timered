@@ -45,7 +45,7 @@ export default class Timer extends Component {
                         onPress={() => {this.setState({isPaused: !this.state.isPaused})}}>
                         <Text>{this.state.isPaused ? "Play" : "Pause"}</Text>
                     </TouchableOpacity> */}
-                    <View style={styles.colorLabel}></View>
+                    <View style={[styles.colorLabel, {backgroundColor: this.props.timer.color}]}></View>
                 </View>
             </View>
         )
@@ -85,6 +85,5 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         left: 0,
-        backgroundColor: 'lightblue'
     }
 })

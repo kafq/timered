@@ -41,7 +41,7 @@ class AddTaskModal extends Component {
 
                 <TouchableOpacity
                     onPress={() => {
-                        this.props.addNewTimer(this.props.newTimerTitle, this.props.newTimerColor)
+                        this.props.addNewTimer(this.props.newTimerTitle, this.props.newTimerColor, this.props.newTimerDuration)
                         this.props.toggleCreateMode()
                     
                     }}
@@ -55,7 +55,8 @@ class AddTaskModal extends Component {
 
 export default connect((state) => ({
     newTimerTitle: state.dataReducer.newTimerTitle,
-    newTimerColor: state.dataReducer.newTimerColor
+    newTimerColor: state.dataReducer.newTimerColor,
+    newTimerDuration: state.dataReducer.newTimerDuration
 }), {
     updateNewTimerTitle,
     addNewTimer

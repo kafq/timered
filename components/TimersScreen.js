@@ -5,6 +5,7 @@ import Timer from './Timer';
 import AddTaskModal from './AddTaskModal';
 import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
 import { connect } from 'react-redux';
+import { pauseTimer, stopTimer } from '../actions/index';
 
 async function getiOSNotificationPermission() {
   const { status } = await Permissions.getAsync(
@@ -36,6 +37,8 @@ class TimersScreen extends React.Component {
         sound: true,
       },
     };
+
+
     let sendAfterFiveSeconds = Date.now();
     sendAfterFiveSeconds += 10000;
 
@@ -43,8 +46,10 @@ class TimersScreen extends React.Component {
     Notifications.scheduleLocalNotificationAsync(
       localnotification,
       schedulingOptions
-    );
+    ).then(id => {console.log(id)});
+
   };
+
   listenForNotifications = () => {
     Notifications.addListener(notification => {
       if (notification.origin === 'received' && Platform.OS === 'ios') {
@@ -52,20 +57,6 @@ class TimersScreen extends React.Component {
       }
     });
   };
-
-  createTimer = () => {
-    let min = this.state.newTimerMinDuration;
-    let sec = this.state.newTimerSecDuration;
-    let ms = parseInt(min) * 60000 + parseInt(sec) * 1000
-    let timers = this.state.timers.concat();
-    timers.push({
-      title: 'Test timer',
-      duration: ms,
-      deadline: Date.now() + ms,
-    })
-
-    this.setState({ timers })
-  }
 
   countdownAll() {
     let timers = this.state.timers.concat()
@@ -77,19 +68,20 @@ class TimersScreen extends React.Component {
   }
 
   pauseTimer = (id) => {
-    console.log('Pausing timer ' + id)
-    let timers = this.state.timers.concat()
-    timers.forEach(timer => timer.id === id ? timer.isPaused = !timer.isPaused : timer)
+    this.props.pauseTimer(id)
+  }
 
-    this.setState({
-      timers
-    })
+  stopTimer = (id) => {
+    this.props.stopTimer(id)
   }
 
   componentWillMount() {
     getiOSNotificationPermission();
     //Notifications.cancelAllScheduledNotificationsAsync()
     this.listenForNotifications();
+  }
+  componentDidMount() {
+    //this._handleButtonPress();
   }
   render() {
     return (
@@ -128,7 +120,9 @@ class TimersScreen extends React.Component {
               <View
               style={{position: 'absolute', right: 0, marginVertical: 3, flexDirection: 'row'}}>
                   
-                  <TouchableOpacity style={styles.stopButton}>
+                  <TouchableOpacity
+                  onPress={() => {this.stopTimer(rowData.item.id)}}                  
+                  style={styles.stopButton}>
                     <Text style={{color: 'white'}}>S</Text>
                   </TouchableOpacity>
 
@@ -157,7 +151,9 @@ class TimersScreen extends React.Component {
 
 export default connect((state)=>({
     timers: state.dataReducer.timers
-}))(TimersScreen);
+}), {
+    pauseTimer, stopTimer
+})(TimersScreen);
 
 const styles = StyleSheet.create({
   container: {
